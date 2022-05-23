@@ -51,15 +51,30 @@ class Bank:
 
         if client_hash == bank_hash:
             self._create_account(client_id)
-            conn.sendall(str.encode(self._create_account(client_id)))
+            secret = self._create_account(client_id)
+            print(f"New account has been created for client, {client_id} with secret, {secret}")
+            jsn = json.dumps(self._account_created_response(secret))
+            conn.sendall(str.encode(jsn))
         else:
             print("Hash mismatch!")
-            conn.sendall(b"New account cannot be created.")
+            jsn = json.dumps(self._hash_mismatch_response())
+            conn.sendall(str.encode(jsn))
 
     def _create_account(self, client_id):
         secret = secrets.token_hex(16)
         self.clients[client_id] = secret
         return secret
+
+    def _account_created_response(self, secret):
+        return {
+            'code': globals.ACCOUNT_CREATED_CODE,
+            'secret': secret
+        }
+
+    def _hash_mismatch_response(self):
+        return {
+            'code': globals.HASH_MISMATCH
+        }
 
     def _get_hash(self, client_id, random_key):
         secret = self.clients.get(client_id, "")

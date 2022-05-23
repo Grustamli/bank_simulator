@@ -34,7 +34,14 @@ class Client:
             hash = self._hash(secret, rand_code)
             s.sendall(str.encode(hash))
             response = s.recv(1024)
-            print(response)
+            response = json.loads(response)
+            code = int(response['code'])
+            if (code == globals.ACCOUNT_CREATED_CODE):
+                new_secret = response['secret']
+                print(f"New secret from {bank_id}: {new_secret}")
+            elif (code == globals.HASH_MISMATCH):
+                print('New account could not be created')
+
 
     def _hash(self, secret, random_code):
         code = bytes.decode(random_code, "ascii")
